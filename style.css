@@ -1,0 +1,54 @@
+body {
+    height: 650px;
+}
+#controls {
+    vertical-align: middle;
+    text-align: center;
+    margin-left: 750px;
+}
+.inlineblock-middle {
+    display: inline-block;
+    height: 25%;
+    vertical-align: middle;
+}
+#controls img {
+    vertical-align: middle;
+}
+#plateau {
+    width: 750px;
+    display: flex;
+    background: blue;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    align-items: center;
+    float: left;
+    height: 100%;
+}
+.column {
+    width: 13%;
+    height: 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-direction: column;
+}
+.row {
+    height: 15%;
+    margin: 3% 0 12%;
+    background: white;
+    align-content: stretch;
+    border-radius: 100%;
+}
+.player1 {
+    background: red;
+}
+.player1Hover {
+    background: red;
+    opacity: 0.7;
+}
+.player2 {
+    background: yellow;
+}
+.player2Hover {
+    background: yellow;
+    opacity: 0.7;
+}
