@@ -98,9 +98,11 @@ var IA = {
         }
 
         // Si on n'a pas de gagnant
-        var [player1, player2] = this.nbSeries(unePartie, 2);
+        var [player1_2, player2_2] = this.nbSeries(unePartie, 2),
+            [player1_3, player2_3] = this.nbSeries(unePartie, 3);
 
-        return player2 - player1;
+
+        return (player2_2 + player2_3) - (player1_2 + player1_3);
     },
 
     /**
@@ -185,6 +187,84 @@ var IA = {
 
                     if (nbAlignes2 === nb) {
                         nbSeriesJoueur2++;
+                    }
+                }
+            }
+        }
+
+        //Diagonale
+        for (let col = 1; col <= game.nbColumn; col++) {
+            for (let row = 1; row <= game.nbRow; row++) {
+                nbAlignes1 = nbAlignes2 = 0;
+                currentPosition = unePartie[col][row];
+                if (currentPosition === "player1") {
+                    nbAlignes1++;
+                } else if (currentPosition === "player2") {
+                    nbAlignes2++;
+                }
+                // On compte les pions en diagonales gauche a droite
+                if (col !== game.nbColumn && row !== game.nbRow && typeof currentPosition !== "undefined") {
+                    var i=col+1, j=row+1;
+                    while (i <= game.nbColumn && j <= game.nbRow) {
+                        _currentPosition = unePartie[i][j];
+                        if (_currentPosition !== currentPosition) {:
+                            break;
+                        } else if (_currentPosition === "player1") {
+                            nbAlignes1++;
+                            // On remet le nbAlignes de l'autre joueur à 0 car sa série a été coupée
+                            nbAlignes2 = 0;
+                            if (nbAlignes1 === nb) {
+                                nbSeriesJoueur1++;
+                            }
+                        } else if (_currentPosition === "player2") {
+                            nbAlignes2++;
+                            // On remet le nbAlignes de l'autre joueur à 0 car sa série a été coupée
+                            nbAlignes1 = 0;
+
+                            if (nbAlignes2 === nb) {
+                                nbSeriesJoueur2++;
+                            }
+                        }
+                        i++;j++;
+                    }
+                }
+            }
+        }
+
+        //Anti diagonale
+        for (let col = 1; col <= game.nbColumn; col++) {
+            for (let row = 1; row <= game.nbRow; row++) {
+                nbAlignes1 = nbAlignes2 = 0;
+                currentPosition = unePartie[col][row];
+                if (currentPosition === "player1") {
+                    nbAlignes1++;
+                } else if (currentPosition === "player2") {
+                    nbAlignes2++;
+                }
+                // On compte les pions en diagonales gauche a droite
+                if (col !== 1 && row !== game.nbRow && typeof currentPosition !== "undefined") {
+                    var i=col-1, j=row+1;
+                    while (i >= 1 && j <= game.nbRow) {
+                        _currentPosition = unePartie[i][j];
+                        if (_currentPosition !== currentPosition) {
+                            break;
+                        } else if (_currentPosition === "player1") {
+                            nbAlignes1++;
+                            // On remet le nbAlignes de l'autre joueur à 0 car sa série a été coupée
+                            nbAlignes2 = 0;
+                            if (nbAlignes1 === nb) {
+                                nbSeriesJoueur1++;
+                            }
+                        } else if (_currentPosition === "player2") {
+                            nbAlignes2++;
+                            // On remet le nbAlignes de l'autre joueur à 0 car sa série a été coupée
+                            nbAlignes1 = 0;
+
+                            if (nbAlignes2 === nb) {
+                                nbSeriesJoueur2++;
+                            }
+                        }
+                        i--;j++;
                     }
                 }
             }
