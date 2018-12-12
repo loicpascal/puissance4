@@ -102,7 +102,7 @@ var IA = {
             [player1_3, player2_3] = this.nbSeries(unePartie, 3);
 
 
-        return (player2_2 + player2_3) - (player1_2 + player1_3);
+        return (player2_2 + player2_3 * 3) - (player1_2 + player1_3 * 3);
     },
 
     /**
@@ -143,10 +143,11 @@ var IA = {
         // Verticalement : pour chaque ligne de chaque colonne
         for (let col = 1; col <= game.nbColumn; col++) {
             nbAlignes1 = 0; nbAlignes2 = 0;
-
             for (let row = 1; row <= game.partie[col].length - 1; row++) {
                 currentPosition = unePartie[col][row];
-                if (currentPosition === "player1") {
+                if (typeof currentPosition === "undefined") {
+                    nbAlignes1 = 0; nbAlignes2 = 0;
+                } else if (currentPosition === "player1") {
                     nbAlignes1++;
                     // On remet le nbAlignes de l'autre joueur à 0 car sa série a été coupée
                     nbAlignes2 = 0;
@@ -169,6 +170,7 @@ var IA = {
 
         // Horizontalement : pour chaque colonne de chaque ligne
         for (let row = 1; row <= game.nbRow; row++) {
+            nbAlignes1 = 0; nbAlignes2 = 0;
             for (let col = 1; col <= game.nbColumn; col++) {
                 currentPosition = unePartie[col][row];
                 if (typeof currentPosition === "undefined") {
@@ -207,7 +209,7 @@ var IA = {
                     var i=col+1, j=row+1;
                     while (i <= game.nbColumn && j <= game.nbRow) {
                         _currentPosition = unePartie[i][j];
-                        if (_currentPosition !== currentPosition) {:
+                        if (_currentPosition !== currentPosition) {
                             break;
                         } else if (_currentPosition === "player1") {
                             nbAlignes1++;

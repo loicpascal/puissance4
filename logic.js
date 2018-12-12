@@ -21,6 +21,7 @@ var game = {
     joueurActif: 'player1',
     nbPointP1: 0,
     nbPointP2: 0,
+    profondeur: 5,
 
 
     /**
@@ -164,7 +165,7 @@ var game = {
     switchActif: function() {
         if (game.joueurActif === 'player1') {
             game.joueurActif = 'player2';
-            IA.jouer(this.partie, 5);
+            IA.jouer(this.partie, this.profondeur);
         } else {
             game.joueurActif = 'player1';
         }
