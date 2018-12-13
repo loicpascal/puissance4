@@ -2,15 +2,53 @@
     <head>
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <meta content="utf-8" http-equiv="encoding">
+        <link href="bootstrap.min.css" rel="stylesheet" type="text/css"/>
         <link href="style.css" rel="stylesheet" type="text/css"/>
         <script src="jquery.min.js"></script>
         <script src="logic.js"></script>
-        <!-- <script src="iaCours.js"></script> -->
-        <script src="iaLoic.js"></script>
+        <script src="ia.js"></script>
     </head>
     <body>
         <div id="plateau"></div>
         <div id="controls">
+            <form>
+                <div class="row">
+                    <div class="col">
+                        <label for="selectPlayer1">Choix du joueur 1</label>
+                        <select id="selectPlayer1" class="form-control">
+                            <option value="player">Joueur</option>
+                            <option value="robot" selected>Intelligence artificielle</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label for="selectPlayer2">Choix du joueur 2</label>
+                        <select id="selectPlayer2" class="form-control">
+                            <option value="player">Joueur</option>
+                            <option value="robot" selected>Intelligence artificielle</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label for="deepPlayer1">Niveau de difficulté IA joueur 1</label>
+                        <select id="deepPlayer1" class="form-control">
+                            <option value="1">Facile</option>
+                            <option value="3">Moyen</option>
+                            <option value="5" selected>Difficile</option>
+                            <option value="7">Trés difficile</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label for="deepPlayer2">Niveau de difficulté IA joueur 2</label>
+                        <select id="deepPlayer2" class="form-control">
+                            <option value="1">Facile</option>
+                            <option value="3">Moyen</option>
+                            <option value="5" selected>Difficile</option>
+                            <option value="7">Trés difficile</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
             <span class="inlineblock-middle"></span>
             <h2>Cliquez ici pour recommencer une nouvelle partie</h2>
             <a href="javascript:game.init();"><img src="start.jpg" title="Press to start a new game"></a>

@@ -22,6 +22,8 @@ var game = {
     nbPointP1: 0,
     nbPointP2: 0,
     profondeur: 5,
+    typeJoueurs: {},
+    delayRobot: 400,
 
 
     /**
@@ -39,8 +41,19 @@ var game = {
         // Construction du plateau
         game.construirePlateau();
 
+        // Assignation des types de joueurs
+        game.typeJoueurs['player1'] = {type: $('#selectPlayer1').val(), deep: $('#deepPlayer1').val()};
+        game.typeJoueurs['player2'] = {type: $('#selectPlayer2').val(), deep: $('#deepPlayer2').val()};
+
         // Enregistrement des évènements
         game.bindColumn();
+
+        if (game.typeJoueurs[game.joueurActif].type === 'robot') {
+            // IA.jouer(this.partie, game.typeJoueurs[game.joueurActif].deep);
+            setTimeout(function(partie, typeJoueurs, joueurActif) {
+                IA.jouer(partie, typeJoueurs[joueurActif].deep);
+            }, game.delayRobot, this.partie, this.typeJoueurs, this.joueurActif);
+        }
     },
 
     /**
@@ -52,11 +65,11 @@ var game = {
         }).hover(
             function() {
                 var row = game.getLastFreeRowPosition($(this).attr('id'));
-                if (row > 0 && game.joueurActif === 'player1') $("#" + $(this).attr('id') + "_" + row).addClass(game.joueurActif + 'Hover');
+                if (row > 0 && game.typeJoueurs[game.joueurActif].type === 'player') $("#" + $(this).attr('id') + "_" + row).addClass(game.joueurActif + 'Hover');
             },
             function() {
                 var row = game.getLastFreeRowPosition($(this).attr('id'));
-                if (row > 0 && game.joueurActif === 'player1') $("#" + $(this).attr('id') + "_" + row).removeClass(game.joueurActif + 'Hover');
+                if (row > 0 && game.typeJoueurs[game.joueurActif].type === 'player') $("#" + $(this).attr('id') + "_" + row).removeClass(game.joueurActif + 'Hover');
             });
     },
 
@@ -85,7 +98,7 @@ var game = {
             game.partie[col] = [];
             var elemeCol = $('<div class="column" id="' + col + '"></div>');
             for (var row = game.nbRow; row >= 1; row--) {
-                var elem = $('<div class="row" id="' + col + '_' + row + '"></div>');
+                var elem = $('<div class="_row" id="' + col + '_' + row + '"></div>');
                 elemeCol.append(elem);
                 game.plateau[col][row] = elem;
             }
@@ -103,7 +116,7 @@ var game = {
                 let currentPosition = unePartie[col][row];
                 if (typeof currentPosition !== "undefined") {
                     $("#" + col + "_" + row).addClass(currentPosition);
-                    $(".row").removeClass("player1Hover player2Hover");
+                    $("._row").removeClass("player1Hover player2Hover");
                 }
             }
         }
@@ -122,13 +135,18 @@ var game = {
             //On remplit le tableau de la partie
             this.partie[col][row] = joueur;
             if (render) {
-                this.majPlateau(game.partie);
+                this.majPlateau(this.partie);
                 // Vérification du cas de victoire
                 var gagnant = IA.gagnant(this.partie);
-                if(gagnant === "player1" || gagnant === "player2")
-                    game.victoire();
-                else
+                if(gagnant === "player1" || gagnant === "player2") {
+                    game.victoire(gagnant);
+                }
+                else if (gagnant === "jeu_fini") {
+                    game.confirmMatchNul();
+                }
+                else {
                     game.switchActif();
+                }
             }
         }
         return row;
@@ -165,38 +183,61 @@ var game = {
     switchActif: function() {
         if (game.joueurActif === 'player1') {
             game.joueurActif = 'player2';
-            IA.jouer(this.partie, this.profondeur);
         } else {
             game.joueurActif = 'player1';
+        }
+        if (game.typeJoueurs[game.joueurActif].type === 'robot') {
+            // IA.jouer(this.partie, game.typeJoueurs[game.joueurActif].deep);
+            setTimeout(function(partie, typeJoueurs, joueurActif) {
+                IA.jouer(partie, typeJoueurs[joueurActif].deep);
+            }, game.delayRobot, this.partie, this.typeJoueurs, this.joueurActif);
         }
     },
 
     /**
      * Lance la victoire du joueur courant
      */
-    victoire: function () {
-        // todo : supprimer
-        alert('victoire');
+    victoire: function (gagnant) {
         $('.column').unbind();
-        if (game.joueurActif === 'player1')
+        if (gagnant === 'player1')
             game.nbPointP1++;
         else
             game.nbPointP2++;
         game.setNbPoints();
-        // todo : décommenter
-        //game.confirmNouvelleManche();
+        game.confirmNouvelleManche(gagnant);
     },
 
     /**
      * Pour lancer une nouvelle manche
      */
-    confirmNouvelleManche: function () {
-        if (confirm('Victoire ' + game.joueurActif + '\nCommencer une nouvelle manche ?')) {
-            $('#plateau').unbind('click').find('.row.player1,.row.player2').removeClass('player1 player2');
+    confirmNouvelleManche: function (gagnant) {
+        game.confirmMessage('Victoire ' + gagnant + '\nCommencer une nouvelle manche ?', game.confirmNouvelleManche, gagnant);
+    },
+
+    confirmMatchNul: function () {
+        game.confirmMessage('Match nul !\nCommencer une nouvelle manche ?', game.confirmMatchNul);
+    },
+
+    confirmMessage: function (message, handler, dataHandler) {
+        if (confirm(message)) {
+            $('#plateau').unbind('click').find('._row.player1,._row.player2').removeClass('player1 player2');
+            // Reset de la partie
+            for (var i=1; i <= game.nbColumn; i++) {
+                game.partie[i] = [];
+            }
             game.bindColumn();
             game.switchActif();
         } else {
-            $('#plateau').unbind('click').click(game.confirmNouvelleManche);
+            $('#plateau').unbind('click');
+            if (typeof dataHandler !== "undefined") {
+                $('#plateau').unbind('click').click({dataHandler: dataHandler}, function(event){
+                    handler(event.data.dataHandler);
+                });
+            } else {
+                $('#plateau').unbind('click').click(function(event){
+                    handler();
+                });
+            }
         }
     },
 
