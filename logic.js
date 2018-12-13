@@ -23,7 +23,10 @@ var game = {
     nbPointP2: 0,
     profondeur: 4,
     typeJoueurs: {},
-    delayRobot: 400,
+    delayRobot: 0,
+    startDate: undefined,
+    it: 0,
+    somme: 0,
 
 
     /**
@@ -48,7 +51,9 @@ var game = {
         // Enregistrement des évènements
         game.bindColumn();
 
-        console.log(+ new Date());
+        game.startDate = + new Date();
+        game.it = 0;
+        game.somme = 0;
 
         if (game.typeJoueurs[game.joueurActif].type === 'robot') {
             // IA.jouer(this.partie, game.typeJoueurs[game.joueurActif].deep);
@@ -62,6 +67,7 @@ var game = {
      * Gère l'affichage sur le hover et ajoute une pièce au clic
      */
     bindColumn: function() {
+        $('#plateau').unbind('click');
         $('.column').click(function () {
             game.placerPiece($(this).attr('id'), game.joueurActif, true);
         }).hover(
@@ -141,7 +147,14 @@ var game = {
                 // Vérification du cas de victoire
                 var gagnant = IA.gagnant(this.partie);
                 if(gagnant === "player1" || gagnant === "player2") {
-                    console.log(+ new Date());
+                    var duree = new Date() - game.startDate;
+                    game.it++;
+                    game.somme += duree;
+                    console.log("Durée de la partie " + game.it + " (ms) : " + duree);
+                    if (game.it === 10) {
+                        duree = game.somme / 10;
+                        console.log("Durée moyenne d'une partie (ms) : " + duree);
+                    }
                     game.victoire(gagnant);
                 }
                 else if (gagnant === "jeu_fini") {
@@ -229,9 +242,9 @@ var game = {
                 game.partie[i] = [];
             }
             game.bindColumn();
+            game.startDate = + new Date();
             game.switchActif();
         } else {
-            $('#plateau').unbind('click');
             if (typeof dataHandler !== "undefined") {
                 $('#plateau').unbind('click').click({dataHandler: dataHandler}, function(event){
                     handler(event.data.dataHandler);
