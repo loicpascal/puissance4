@@ -1,5 +1,4 @@
 var IA = {
-    log: false,
 
     /**
      * Joue pour l'IA
@@ -8,21 +7,27 @@ var IA = {
      */
     jouer: function (unePartie, profondeur) {
         var tmp;
-        var maxCol = 1;
+        var maxCol = [1];
         var max = -10000;
         let row;
+        var joueurActif = game.joueurActif;
 
         for (var col = 1; col <= game.nbColumn; col++) {
-            game.joueurActif = 'player2';
-            row = game.placerPiece(col, "player2");
-            tmp = this.min(unePartie, profondeur-1);
-            if (tmp > max) {
-                max = tmp;
-                maxCol = col;
+            game.joueurActif = joueurActif;
+            row = game.placerPiece(col, game.joueurActif);
+            if (row > 0) {
+                tmp = this.min(unePartie, profondeur-1, joueurActif);
+                if (tmp > max) {
+                    max = tmp;
+                    maxCol = [col];
+                } else if (tmp === max) {
+                    maxCol.push(col);
+                }
+                game.retirerPiece(col, row);
             }
-            game.retirerPiece(col, row);
         }
-        game.placerPiece(maxCol, "player2", true);
+        maxCol = maxCol[Math.floor(Math.random() * maxCol.length)];
+        game.placerPiece(maxCol, joueurActif, true);
     },
 
     /**
@@ -31,23 +36,25 @@ var IA = {
      * @param profondeur
      * @returns {*}
      */
-    max: function (partie, profondeur) {
+    max: function (partie, profondeur, joueurRef) {
         if (profondeur === 0 || this.gagnant(partie) !== "aucun") {
-            return this.evaluer(partie);
+            return this.evaluer(partie, joueurRef);
         }
 
         var max = -10000;
         let tmp, row;
 
         for (var col = 1; col <= game.nbColumn; col++) {
-            game.joueurActif = 'player2';
-            row = game.placerPiece(col, "player2");
-            tmp = this.min(partie, profondeur-1);
+            game.joueurActif = joueurRef;
+            row = game.placerPiece(col, game.joueurActif);
+            if (row > 0) {
+                tmp = this.min(partie, profondeur-1, joueurRef);
 
-            if (tmp > max) {
-                max = tmp;
+                if (tmp > max) {
+                    max = tmp;
+                }
+                game.retirerPiece(col, row);
             }
-            game.retirerPiece(col, row);
         }
         return max;
     },
@@ -58,23 +65,25 @@ var IA = {
      * @param profondeur
      * @returns {*}
      */
-    min: function (unePartie, profondeur) {
+    min: function (unePartie, profondeur, joueurRef) {
         if (profondeur === 0 || this.gagnant(unePartie) !== "aucun") {
-            return this.evaluer(unePartie);
+            return this.evaluer(unePartie, joueurRef);
         }
 
         var min = 10000;
         var tmp, row;
 
         for (var col = 1; col <= game.nbColumn; col++) {
-            game.joueurActif = 'player1';
-            row = game.placerPiece(col, "player1");
-            tmp = this.max(unePartie, profondeur-1);
+            game.joueurActif = (joueurRef === "player2" ? "player1" : "player2");
+            row = game.placerPiece(col, game.joueurActif );
+            if (row > 0) {
+                tmp = this.max(unePartie, profondeur-1, joueurRef);
 
-            if (tmp < min) {
-                min = tmp;
+                if (tmp < min) {
+                    min = tmp;
+                }
+                game.retirerPiece(col, row);
             }
-            game.retirerPiece(col, row);
         }
         return min;
     },
@@ -84,13 +93,13 @@ var IA = {
      * @param unePartie
      * @returns {*}²
      */
-    evaluer: function(unePartie) {
+    evaluer: function(unePartie, joueurRef) {
         let vainqueur = this.gagnant(unePartie);
         // Si on a un gagnant
         if (vainqueur !== "aucun") {
-            if (vainqueur === "player2") {
+            if (vainqueur === joueurRef) {
                 return 1000;
-            } else if (vainqueur === "player1") {
+            } else if (vainqueur === (joueurRef === "player2" ? "player1" : "player2")) {
                 return -1000;
             } else {
                 return 0;
@@ -101,8 +110,11 @@ var IA = {
         var [player1_2, player2_2] = this.nbSeries(unePartie, 2),
             [player1_3, player2_3] = this.nbSeries(unePartie, 3);
 
-
-        return (player2_2 + player2_3) - (player1_2 + player1_3);
+        if (joueurRef === "player2") {
+            return (player2_2 + player2_3 * 3) - (player1_2 + player1_3 * 3);
+        } else {
+            return (player1_2 + player1_3 * 3) - (player2_2 + player2_3 * 3);
+        }
     },
 
     /**
@@ -143,10 +155,11 @@ var IA = {
         // Verticalement : pour chaque ligne de chaque colonne
         for (let col = 1; col <= game.nbColumn; col++) {
             nbAlignes1 = 0; nbAlignes2 = 0;
-
             for (let row = 1; row <= game.partie[col].length - 1; row++) {
                 currentPosition = unePartie[col][row];
-                if (currentPosition === "player1") {
+                if (typeof currentPosition === "undefined") {
+                    nbAlignes1 = 0; nbAlignes2 = 0;
+                } else if (currentPosition === "player1") {
                     nbAlignes1++;
                     // On remet le nbAlignes de l'autre joueur à 0 car sa série a été coupée
                     nbAlignes2 = 0;
@@ -169,6 +182,7 @@ var IA = {
 
         // Horizontalement : pour chaque colonne de chaque ligne
         for (let row = 1; row <= game.nbRow; row++) {
+            nbAlignes1 = 0; nbAlignes2 = 0;
             for (let col = 1; col <= game.nbColumn; col++) {
                 currentPosition = unePartie[col][row];
                 if (typeof currentPosition === "undefined") {
@@ -207,7 +221,7 @@ var IA = {
                     var i=col+1, j=row+1;
                     while (i <= game.nbColumn && j <= game.nbRow) {
                         _currentPosition = unePartie[i][j];
-                        if (_currentPosition !== currentPosition) {:
+                        if (_currentPosition !== currentPosition) {
                             break;
                         } else if (_currentPosition === "player1") {
                             nbAlignes1++;
@@ -269,8 +283,6 @@ var IA = {
                 }
             }
         }
-
-        // todo : diagonales (montantes et descendantes)
 
         return [nbSeriesJoueur1, nbSeriesJoueur2];
     },
