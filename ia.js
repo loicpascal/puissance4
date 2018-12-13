@@ -26,9 +26,6 @@ var IA = {
                 game.retirerPiece(col, row);
             }
         }
-        if (joueurActif === "player1") {
-            console.log(maxCol + " " + max);
-        }
         maxCol = maxCol[Math.floor(Math.random() * maxCol.length)];
         game.placerPiece(maxCol, joueurActif, true);
     },

@@ -21,7 +21,7 @@ var game = {
     joueurActif: 'player1',
     nbPointP1: 0,
     nbPointP2: 0,
-    profondeur: 5,
+    profondeur: 4,
     typeJoueurs: {},
     delayRobot: 400,
 
@@ -47,6 +47,8 @@ var game = {
 
         // Enregistrement des évènements
         game.bindColumn();
+
+        console.log(+ new Date());
 
         if (game.typeJoueurs[game.joueurActif].type === 'robot') {
             // IA.jouer(this.partie, game.typeJoueurs[game.joueurActif].deep);
@@ -139,6 +141,7 @@ var game = {
                 // Vérification du cas de victoire
                 var gagnant = IA.gagnant(this.partie);
                 if(gagnant === "player1" || gagnant === "player2") {
+                    console.log(+ new Date());
                     game.victoire(gagnant);
                 }
                 else if (gagnant === "jeu_fini") {
